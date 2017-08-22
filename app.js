@@ -1,11 +1,36 @@
-var express = require("express");
-var app = express();
-var bodyParser = require("body-parser");
+var express     = require("express"),
+    app         = express(),
+    bodyParser  = require("body-parser"),
+    mongoose    = require("mongoose");
 
+mongoose.Promise = global.Promise;
+mongoose.connect("mongodb://localhost/final_camping_site", {useMongoClient: true});
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 
+//Setup Schema
+var campgroundSchema = new mongoose.Schema({
+    name: String,
+    image: String
+});
+
+var Campground = mongoose.model("Campground", campgroundSchema);
+
+/*Campground.create(
+    {
+        name: "Alta Lake",
+        image: "https://s-media-cache-ak0.pinimg.com/originals/40/d8/7d/40d87d82dc61f8b076ce38f887550975.jpg"
+        
+    }, function(err, campground){
+        if(err){
+            console.log(err);
+        }else{
+            console.log("Newly Created Campground: ");
+            console.log(campground);
+        }
+    });*/
+    
  var campgrounds = [
         {name: "Alta Lake", image: "https://s-media-cache-ak0.pinimg.com/originals/40/d8/7d/40d87d82dc61f8b076ce38f887550975.jpg"},
         {name: "Curlew Lake", image: "https://media-cdn.tripadvisor.com/media/photo-s/0c/86/18/01/black-beach-resort-is.jpg"},
@@ -24,7 +49,13 @@ app.get("/", function(req, res){
 
 
 app.get("/campgrounds", function(req, res){
-    res.render("campgrounds", {campgrounds: campgrounds});
+    Campground.find({}, function(err, allCampgrounds){
+        if(err){
+            console.log(err);
+        }else{
+            res.render("campgrounds", {campgrounds: allCampgrounds});
+        }
+    });
 });
 
 app.post("/campgrounds", function(req, res){
@@ -32,9 +63,17 @@ app.post("/campgrounds", function(req, res){
     var name = req.body.name;
     var image =req.body.image;
     var newCampground = {name: name, image: image};
-    campgrounds.push(newCampground);
+    //create new campground and save to DB
+    Campground.create(newCampground, function(err, newlyCreated){
+        if(err){
+            console.log(err);
+        }else{
+            res.redirect("/campgrounds");
+        }
+    });
+    
     //redirect back to campgrounds page
-    res.redirect("/campgrounds");
+   // res.redirect("/campgrounds");
 });
 
 app.get("/campgrounds/new", function(req, res){
