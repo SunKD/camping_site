@@ -71,9 +71,6 @@ app.post("/campgrounds", function(req, res){
             res.redirect("/campgrounds");
         }
     });
-    
-    //redirect back to campgrounds page
-   // res.redirect("/campgrounds");
 });
 
 app.get("/campgrounds/new", function(req, res){
